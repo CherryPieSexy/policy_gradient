@@ -1,3 +1,3 @@
-from .dense import ActorCriticShared, ActorCriticSeparate
+from .dense import DenseSeparate, DenseShared
 
-__all__ = ['ActorCriticShared', 'ActorCriticSeparate']
+__all__ = ['DenseSeparate', 'DenseShared']
