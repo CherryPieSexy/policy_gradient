@@ -1,0 +1,6 @@
+tqdm
+numpy
+torch
+tensorboardX
+gym
+gym[atari]
