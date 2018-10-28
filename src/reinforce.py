@@ -1,6 +1,5 @@
 from tqdm import trange
 import torch
-from utils import play_episode
 
 __all__ = ['Reinforce']
 
@@ -18,9 +17,6 @@ class Reinforce:
         self.writer = writer
         self.gamma = gamma
 
-    def init_print(self):
-        pass
-
     def discounted_reward(self, rewards):
         d_reward = [rewards[-1]]
         for r in reversed(rewards[:-1]):
@@ -35,7 +31,7 @@ class Reinforce:
 
     def play_episode(self):
         observation = self.environment.reset()
-        observations, actions, rewards = [], [], []
+        observations, actions, rewards = [observation], [], []
         done = False
         while not done:
             action = self.act(observation)
@@ -43,7 +39,7 @@ class Reinforce:
             observations.append(observation)
             actions.append(action)
             rewards.append(reward)
-        return observations, actions, rewards
+        return observations[:-1], actions, rewards
 
     def train_step(self):
         observations, actions, rewards = self.play_episode()
@@ -65,13 +61,10 @@ class Reinforce:
         self.optimizer.step()
         return policy_loss.item(), entropy.item(), sum(rewards)
 
-    def train(self, n_episodes, filename=None):
+    def train(self, n_episodes):
         """train agent for n full episodes"""
         for episode in trange(n_episodes):
             policy_loss, entropy, episode_reward = self.train_step()
             self.writer.add_scalar('policy_loss', policy_loss, episode)
             self.writer.add_scalar('entropy', entropy, episode)
             self.writer.add_scalar('episode_reward', episode_reward, episode)
-        if filename is not None:
-            self.save(filename)
-            print('checkpoint saved in \'{}\''.format(filename))
