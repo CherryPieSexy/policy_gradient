@@ -3,7 +3,7 @@ import torch
 import argparse
 import gym
 from tensorboardX import SummaryWriter
-from src.networks import DenseSeparate, DenseShared
+from src.networks import DenseSeparate, DenseShared, ConvSeparate, ConvShared
 from src import Reinforce, atari_list, save
 
 
@@ -39,6 +39,9 @@ if __name__ == '__main__':
     args, remaining = parser.parse_known_args()
 
     print('================== Policy gradient training ==================')
+    # init environment
+    environment = gym.make(args.environment).env
+    # TODO: env_pool for A2C and PPO, atari_wrappers for atari
     # init net
     if args.environment in ['CartPole-v0', 'CartPole-v1']:
         if args.net_type == 'Shared':
@@ -46,7 +49,10 @@ if __name__ == '__main__':
         else:
             net = DenseSeparate(4, 128, 2)
     elif args.environment in atari_list:
-        raise BaseException('Atari not supported yet ¯\_(ツ)_/¯')
+        if args.net_type == 'Shared':
+            net = ConvShared(environment.action_space.n)
+        else:
+            net = ConvSeparate(environment.action_space.n)
     else:
         raise BaseException('Only CartPole-v0, v1 and Atari supported')
     print('Environment: {}, agent: {}'.format(args.environment, args.agent))
@@ -68,9 +74,7 @@ if __name__ == '__main__':
     writer = SummaryWriter(log_string)
     if args.gamma < 0.0 or args.gamma > 1.0:
         raise BaseException('Discount factor must be from 0.0 to 1.0')
-
     if args.agent == 'Reinforce':
-        environment = gym.make(args.environment).env
         agent = Reinforce(environment, net, optimizer, args.entropy_reg, writer)
     else:
         raise BaseException('Only Reinforce implemented by now ¯\_(ツ)_/¯')

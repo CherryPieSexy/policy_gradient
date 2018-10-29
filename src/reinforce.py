@@ -17,6 +17,10 @@ class Reinforce:
         self.writer = writer
         self.gamma = gamma
 
+    # TODO
+    def create(self):
+        pass
+
     def discounted_reward(self, rewards):
         d_reward = [rewards[-1]]
         for r in reversed(rewards[:-1]):
