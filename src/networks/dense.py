@@ -10,12 +10,12 @@ __all__ = [
 class DenseActor(nn.Module):
     net_type = 'dense_actor'
     """Actor network with one head for policy estimation"""
-    def __init__(self, obs_dim, hidden_dim, n_actions):
+    def __init__(self, obs_dim, hidden_dim, num_actions):
         super(DenseActor, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(obs_dim, hidden_dim), nn.ReLU(True),
             nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True),
-            nn.Linear(hidden_dim, n_actions)
+            nn.Linear(hidden_dim, num_actions)
         )
 
     def forward(self, observation):
@@ -39,10 +39,10 @@ class DenseCritic(nn.Module):
 
 class DenseSeparate(nn.Module):
     net_type = 'dense_separate'
-    """Actor-Critic network with tho heads with separate parameters"""
-    def __init__(self, obs_dim, hidden_dim, n_actions):
+    """Actor-Critic network with two heads with separate parameters"""
+    def __init__(self, obs_dim, hidden_dim, num_actions):
         super(DenseSeparate, self).__init__()
-        self.actor = DenseActor(obs_dim, hidden_dim, n_actions)
+        self.actor = DenseActor(obs_dim, hidden_dim, num_actions)
         self.critic = DenseCritic(obs_dim, hidden_dim)
 
     def forward(self, observation):
@@ -54,13 +54,13 @@ class DenseSeparate(nn.Module):
 class DenseShared(nn.Module):
     net_type = 'dense_shared'
     """Actor-Critic network with two heads with shared parameters"""
-    def __init__(self, obs_dim, hidden_dim, n_actions):
+    def __init__(self, obs_dim, hidden_dim, num_actions):
         super(DenseShared, self).__init__()
         self.feature_extractor = nn.Sequential(
             nn.Linear(obs_dim, hidden_dim), nn.ReLU(True),
             nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True),
         )
-        self.policy_layer = nn.Linear(hidden_dim, n_actions)
+        self.policy_layer = nn.Linear(hidden_dim, num_actions)
         self.value_layer = nn.Linear(hidden_dim, 1)
 
     def forward(self, observation):
