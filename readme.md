@@ -10,4 +10,4 @@ pytorch realisation of the very basic policy gradient algorithms:
 
   - **CartPole** - the easiest RL environment possible
   - **Atari Pong** - the easiest atari environment
-  - **Atari KungFuMaster** -
+  - **Atari Others** - other atari environments

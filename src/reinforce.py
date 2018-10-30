@@ -28,7 +28,7 @@ class Reinforce:
         return d_reward[::-1]
 
     def act(self, observation):
-        logit, _ = self.net(torch.tensor(observation, dtype=torch.float32))
+        logit, _ = self.net(torch.tensor([observation], dtype=torch.float32))
         prob = torch.softmax(logit, dim=-1)
         action = torch.multinomial(prob, 1).item()
         return action

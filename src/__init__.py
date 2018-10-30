@@ -1,4 +1,5 @@
 from .reinforce import Reinforce
-from .utils import atari_list, play_episode, save, load
+from .utils import play_episode, save, load
+from .atari_utils import atari_list, make_atari
 
-__all__ = ['Reinforce', 'atari_list', 'play_episode', 'save', 'load']
+__all__ = ['Reinforce', 'play_episode', 'save', 'load', 'atari_list', 'make_atari']

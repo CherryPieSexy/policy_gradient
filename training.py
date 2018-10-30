@@ -4,7 +4,7 @@ import argparse
 import gym
 from tensorboardX import SummaryWriter
 from src.networks import DenseSeparate, DenseShared, ConvSeparate, ConvShared
-from src import Reinforce, atari_list, save
+from src import Reinforce, atari_list, save, make_atari, play_episode
 
 
 if __name__ == '__main__':
@@ -36,19 +36,23 @@ if __name__ == '__main__':
                         help="Cuda. \'true\' or \'false\'")
     parser.add_argument("--train_steps", type=int, default=0,
                         help="number of training steps")
+    parser.add_argument("--watch", type=int, default=0,
+                        help="number of episodes to watch")
     args, remaining = parser.parse_known_args()
 
     print('================== Policy gradient training ==================')
     # init environment
-    environment = gym.make(args.environment).env
+
     # TODO: env_pool for A2C and PPO, atari_wrappers for atari
     # init net
     if args.environment in ['CartPole-v0', 'CartPole-v1']:
+        environment = gym.make(args.environment).env
         if args.net_type == 'Shared':
             net = DenseShared(4, 128, 2)
         else:
             net = DenseSeparate(4, 128, 2)
     elif args.environment in atari_list:
+        environment = make_atari(args.environment)
         if args.net_type == 'Shared':
             net = ConvShared(environment.action_space.n)
         else:
@@ -77,15 +81,22 @@ if __name__ == '__main__':
     if args.agent == 'Reinforce':
         agent = Reinforce(environment, net, optimizer, args.entropy_reg, writer)
     else:
-        raise BaseException('Only Reinforce implemented by now ¯\_(ツ)_/¯')
+        raise BaseException('Only Reinforce implemented by now')
 
     # training:
-    print('========================= training ===========================')
-    agent.train(args.train_steps)
-    try:
-        os.mkdir('./checkpoints/' + args.environment + '/')
-    except FileExistsError:
-        pass
-    checkpoint = 'checkpoints/' + args.environment + '/' + args.agent + '.pth'
-    save(agent, checkpoint)
-    print('Training done. Checkpoint saved in \'{}\''.format(checkpoint))
+    if args.train_steps > 0:
+        print('========================= training ===========================')
+        agent.train(args.train_steps)
+        try:
+            os.mkdir('./checkpoints/' + args.environment + '/')
+        except FileExistsError:
+            pass
+        checkpoint = 'checkpoints/' + args.environment + '/' + args.agent + '.pth'
+        save(agent, checkpoint)
+        print('Training done. Checkpoint saved in \'{}\''.format(checkpoint))
+
+    if args.watch > 0:
+        print('========================= watching ===========================')
+        for _ in range(args.watch):
+            print(play_episode(environment, agent, True))
+    environment.close()
