@@ -4,7 +4,7 @@ import argparse
 import gym
 from tensorboardX import SummaryWriter
 from src.networks import DenseSeparate, DenseShared, ConvSeparate, ConvShared
-from src import Reinforce, atari_list, save, make_atari, play_episode
+from src import Reinforce, A2C, atari_list, save, make_atari, play_episode, EnvPool
 
 
 if __name__ == '__main__':
@@ -20,8 +20,6 @@ if __name__ == '__main__':
     parser.add_argument("environment", type=str,
                         help="Environment name. Only CartPole-v0, v1 and Atari supported")
 
-    parser.add_argument("--env_pool_size", type=int, default=20,
-                        help="Number of parallel environments. Only for A2C and PPO")
     parser.add_argument("--net_type", type=str, default='Shared',
                         help="Net type, one from {\'Shared\', \'Separate\'}")
     parser.add_argument("--optimizer", type=str, default='Adam',
@@ -36,15 +34,19 @@ if __name__ == '__main__':
                         help="Cuda. \'true\' or \'false\'")
     parser.add_argument("--train_steps", type=int, default=0,
                         help="number of training steps")
+    parser.add_argument("--n_environments", type=int, default=16,
+                        help="number of parallel environments, for A2C and PPO")
+    parser.add_argument("--rollout_len", type=int, default=10,
+                        help="number of steps in env_pool to form a batch in A2C or PPO")
+    parser.add_argument("--normalize_advantage", type=bool_type, default='true',
+                        help="if \'true\' advantage estimations will be normalized")
     parser.add_argument("--watch", type=int, default=0,
                         help="number of episodes to watch")
     args, remaining = parser.parse_known_args()
 
     print('================== Policy gradient training ==================')
-    # init environment
-
-    # TODO: env_pool for A2C and PPO, atari_wrappers for atari
-    # init net
+    # TODO: env_pool for A2C and PPO
+    # init environment and net
     if args.environment in ['CartPole-v0', 'CartPole-v1']:
         environment = gym.make(args.environment).env
         if args.net_type == 'Shared':
@@ -76,13 +78,25 @@ if __name__ == '__main__':
 
     # init writer
     log_string = 'logs/' + args.environment + '/' + args.agent + '/'
+    if args.agent in ['A2C', 'PPO'] and args.normalize_advantage:
+        log_string = log_string[:-1] + '_norm_A/'
     writer = SummaryWriter(log_string)
     if args.gamma < 0.0 or args.gamma > 1.0:
         raise BaseException('Discount factor must be from 0.0 to 1.0')
     if args.agent == 'Reinforce':
-        agent = Reinforce(environment, net, optimizer, args.entropy_reg, writer)
+        agent = Reinforce(environment, net, device, optimizer, args.entropy_reg, writer, args.gamma)
     else:
-        raise BaseException('Only Reinforce implemented by now')
+        if args.environment in ['CartPole-v0', 'CartPole-v1']:
+            env_pool = EnvPool(gym.make, args.environment, args.n_environments, writer)
+        else:
+            env_pool = EnvPool(make_atari, args.environment, args.n_environments, writer)
+        if args.agent == 'A2C':
+            agent = A2C(env_pool, net, device, optimizer, args.entropy_reg, writer,
+                        args.rollout_len, args.normalize_advantage, args.gamma)
+        elif args.agent == 'PPO':
+            raise BaseException('not implemented yet')
+        else:
+            raise BaseException('wrong agent')
 
     # training:
     if args.train_steps > 0:
