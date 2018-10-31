@@ -3,5 +3,6 @@ numpy
 opencv-python
 torch
 tensorboardX
+cloudpickle
 gym
 gym[atari]

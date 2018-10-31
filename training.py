@@ -69,6 +69,7 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(net.parameters(), args.lr)
     else:
         raise BaseException('Only Adam and SGD supported')
+    net.to(device)
     print('net: {}, optimizer: {}, lr: {}, entropy: {}'.format(
         args.net_type, args.optimizer, args.lr, args.entropy_reg
     ))

@@ -8,18 +8,15 @@ class Reinforce:
     agent = 'Reinforce'
     """Reinforce agent"""
     def __init__(self, environment,
-                 net, optimizer, entropy_reg, writer,
+                 net, device, optimizer, entropy_reg, writer,
                  gamma=0.99):
         self.environment = environment
         self.net = net
+        self.device = device
         self.optimizer = optimizer
         self.entropy_reg = entropy_reg
         self.writer = writer
         self.gamma = gamma
-
-    # TODO
-    def create(self):
-        pass
 
     def discounted_reward(self, rewards):
         d_reward = [rewards[-1]]
@@ -28,9 +25,9 @@ class Reinforce:
         return d_reward[::-1]
 
     def act(self, observation):
-        logit, _ = self.net(torch.tensor([observation], dtype=torch.float32))
+        logit, _ = self.net(torch.tensor([observation], dtype=torch.float32, device=self.device))
         prob = torch.softmax(logit, dim=-1)
-        action = torch.multinomial(prob, 1).item()
+        action = torch.multinomial(prob, 1).cpu().item()
         return action
 
     def play_episode(self):
@@ -49,8 +46,8 @@ class Reinforce:
         observations, actions, rewards = self.play_episode()
         d_rewards = self.discounted_reward(rewards)
 
-        observations = torch.tensor(observations, dtype=torch.float32)
-        d_rewards = torch.tensor(d_rewards, dtype=torch.float32)
+        observations = torch.tensor(observations, dtype=torch.float32, device=self.device)
+        d_rewards = torch.tensor(d_rewards, dtype=torch.float32, device=self.device)
         logit, _ = self.net(observations)
         p = torch.softmax(logit, dim=-1)
         log_p = torch.log_softmax(logit, dim=-1)
