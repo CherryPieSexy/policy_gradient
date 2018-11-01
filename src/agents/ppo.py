@@ -73,18 +73,18 @@ class PPO:
             _, next_values = self.net(observations[1:].view(time*batch, *obs_size))
         advantage = self.compute_gae(rewards, values.view(time, batch), (1.0 - dones) * next_values.view(time, batch))
 
-        # if self.normalize_advantage:
-        #     advantage = (advantage - advantage.mean()) / (advantage.std())
+        if self.normalize_advantage:
+            advantage = (advantage - advantage.mean()) / (advantage.std())
         epoch_policy_loss, epoch_entropy, epoch_value_loss = 0., 0., 0.
         for _ in range(self.num_ppo_epochs):
-            indices = torch.randint(0, batch, size=(self.ppo_batch_size,), dtype=torch.long).cpu().numpy().tolist()
-            policy_loss, value_loss, entropy = self.ppo_epoch(observations[:-1, indices].view(-1, *obs_size),
-                                                              actions[:, indices].view(-1),
-                                                              rewards[:, indices].view(-1),
-                                                              dones[:, indices].view(-1),
-                                                              observations[1:, indices].view(-1, *obs_size),
-                                                              advantage[:, indices].view(-1).detach(),
-                                                              log_p_for_actions[:, indices].view(-1))
+            indices = torch.randint(0, batch * time, size=(self.ppo_batch_size,), dtype=torch.long)
+            policy_loss, value_loss, entropy = self.ppo_epoch(observations[:-1].view(-1, *obs_size)[indices],
+                                                              actions.view(-1)[indices],
+                                                              rewards.view(-1)[indices],
+                                                              dones.view(-1)[indices],
+                                                              observations[1:].view(-1, *obs_size)[indices],
+                                                              advantage.view(-1)[indices],
+                                                              log_p_for_actions.view(-1)[indices])
             epoch_value_loss += value_loss
             epoch_policy_loss += policy_loss
             epoch_entropy += entropy

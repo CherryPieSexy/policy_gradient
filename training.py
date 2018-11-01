@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument("agent", type=str,
                         help="Agent type, one from {\'Reinforce\', \'A2C\', \'PPO\'}")
     parser.add_argument("environment", type=str,
-                        help="Environment name. Only CartPole-v0, v1 and Atari supported")
+                        help="Environment name. Only CartPole-v1 and Atari supported")
 
     parser.add_argument("--net_type", type=str, default='Shared',
                         help="Net type, one from {\'Shared\', \'Separate\'}")
@@ -57,8 +57,8 @@ if __name__ == '__main__':
 
     print('================== Policy gradient training ==================')
     # init environment and net
-    if args.environment in ['CartPole-v0', 'CartPole-v1']:
-        environment = gym.make(args.environment).env
+    if args.environment == 'CartPole-v1':
+        environment = gym.make(args.environment)
         if args.net_type == 'Shared':
             net = DenseShared(4, 128, 2)
         else:
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         else:
             net = ConvSeparate(environment.action_space.n)
     else:
-        raise BaseException('Only CartPole-v0, v1 and Atari supported')
+        raise BaseException('Only CartPole-v1 and Atari supported')
     print('Environment: {}, agent: {}'.format(args.environment, args.agent))
 
     # init optimizer
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     if args.agent == 'Reinforce':
         agent = Reinforce(environment, net, device, optimizer, args.entropy_reg, writer, args.gamma)
     else:
-        if args.environment in ['CartPole-v0', 'CartPole-v1']:
+        if args.environment == 'CartPole-v1':
             env_pool = EnvPool(gym.make, args.environment, args.n_environments, writer)
         else:
             env_pool = EnvPool(make_atari, args.environment, args.n_environments, writer)

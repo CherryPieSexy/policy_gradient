@@ -1,7 +1,7 @@
 #!/bin/bash
 
 python3 training.py \
---agent PPO --environment CartPole-v0 \
+--agent PPO --environment CartPole-v1 \
 --net_type Shared --optimizer Adam --lr 1e-3 --entropy_reg 1e-1 \
 --gamma 0.99 --cuda false --train_steps 5000 \
 --n_environments 20 --rollout_len 1 --normalize_advantage true \
