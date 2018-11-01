@@ -1,8 +1,6 @@
 from tqdm import trange
 import torch
 
-__all__ = ['Reinforce']
-
 
 class Reinforce:
     agent = 'Reinforce'

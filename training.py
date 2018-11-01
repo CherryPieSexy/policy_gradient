@@ -4,7 +4,7 @@ import argparse
 import gym
 from tensorboardX import SummaryWriter
 from src.networks import DenseSeparate, DenseShared, ConvSeparate, ConvShared
-from src import Reinforce, A2C, atari_list, save, make_atari, play_episode, EnvPool
+from src import Reinforce, A2C, PPO, atari_list, save, make_atari, play_episode, EnvPool
 
 
 if __name__ == '__main__':
@@ -34,18 +34,28 @@ if __name__ == '__main__':
                         help="Cuda. \'true\' or \'false\'")
     parser.add_argument("--train_steps", type=int, default=0,
                         help="number of training steps")
+    # a2c specific arguments:
     parser.add_argument("--n_environments", type=int, default=16,
                         help="number of parallel environments, for A2C and PPO")
     parser.add_argument("--rollout_len", type=int, default=10,
                         help="number of steps in env_pool to form a batch in A2C or PPO")
     parser.add_argument("--normalize_advantage", type=bool_type, default='true',
                         help="if \'true\' advantage estimations will be normalized")
+    # ppo specific arguments:
+    parser.add_argument("--ppo_batch_size", type=int, default=16,
+                        help="ppo batch size")
+    parser.add_argument("--num_ppo_epochs", type=int, default=16,
+                        help="number of ppo epoch")
+    parser.add_argument("--ppo_eps", type=float, default=0.1,
+                        help="ppo epsilon, some-what 'trust-region' size")
+    parser.add_argument("--gae_lambda", type=float, default=10,
+                        help="lambda parameter for generalized advantage estimation")
+
     parser.add_argument("--watch", type=int, default=0,
                         help="number of episodes to watch")
     args, remaining = parser.parse_known_args()
 
     print('================== Policy gradient training ==================')
-    # TODO: env_pool for A2C and PPO
     # init environment and net
     if args.environment in ['CartPole-v0', 'CartPole-v1']:
         environment = gym.make(args.environment).env
@@ -94,7 +104,10 @@ if __name__ == '__main__':
             agent = A2C(env_pool, net, device, optimizer, args.entropy_reg, writer,
                         args.rollout_len, args.normalize_advantage, args.gamma)
         elif args.agent == 'PPO':
-            raise BaseException('not implemented yet')
+            agent = PPO(env_pool, net, device, optimizer, args.entropy_reg, writer,
+                        args.rollout_len, args.normalize_advantage,
+                        args.ppo_batch_size, args.num_ppo_epochs, args.ppo_eps, args.gae_lambda,
+                        args.gamma)
         else:
             raise BaseException('wrong agent')
 

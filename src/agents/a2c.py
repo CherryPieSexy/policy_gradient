@@ -2,8 +2,6 @@ from tqdm import trange
 import torch
 import torch.nn.functional as F
 
-__all__ = ['A2C']
-
 
 class A2C:
     agent = 'Actor-Critic'
@@ -75,10 +73,10 @@ class A2C:
         self.optimizer.step()
         return policy_loss.item(), value_loss.item(), entropy.item()
 
-    def train(self, n_training_steps):
+    def train(self, num_training_steps):
         """train agent for n training steps"""
         observation = self.env_pool.reset()
-        for step in trange(n_training_steps):
+        for step in trange(num_training_steps):
             observations, actions, rewards, dones = self.collect_batch(observation)
             policy_loss, value_loss, entropy = self.train_on_batch(observations, actions, rewards, dones)
             self.writer.add_scalar('policy_loss', policy_loss, step)
