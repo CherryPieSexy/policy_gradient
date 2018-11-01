@@ -14,7 +14,8 @@ atari_list = ['AirRaid-v0', 'Alien-v0', 'Amidar-v0', 'Assault-v0', 'Asterix-v0',
               'Carnival-v0', 'Centipede-v0', 'ChopperCommand-v0', 'CrazyClimber-v0',
               'DemonAttack-v0', 'DoubleDunk-v0',
               'ElevatorAction-v0', 'Enduro-v0', 'FishingDerby-v0', 'Freeway-v0', 'Frostbite-v0',
-              'KungFuMaster-v0']
+              'KungFuMaster-v0',
+              'Pong-v0']
 
 
 class EpisodicLifeEnv(gym.Wrapper):

@@ -6,7 +6,7 @@ __all__ = ['EnvPool']
 
 class EnvPool:
     def __init__(self, make_env, env_name, n_envs, writer):
-        self.environments = [make_env(env_name).env for _ in range(n_envs)]
+        self.environments = [make_env(env_name) for _ in range(n_envs)]
         self.episodes_done = 0
         self.current_rewards = np.zeros(n_envs, dtype=np.float32)
         self.finished_rewards = [deque() for _ in range(n_envs)]

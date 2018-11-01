@@ -26,7 +26,6 @@ class PPO:
         self.gae_lambda = gae_lambda
 
         self.gamma = gamma
-        print(ppo_batch_size, num_ppo_epochs, ppo_eps, gae_lambda)
 
     def act(self, observation):
         with torch.no_grad():
