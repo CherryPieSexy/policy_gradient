@@ -10,7 +10,7 @@ def play_episode(environment, agent, render):
     observation = environment.reset()
     done = False
     while not done:
-        action = agent.act(observation)
+        action = agent.act([observation])
         observation, reward, done, _ = environment.step(action)
         if render:
             environment.render()
@@ -22,7 +22,7 @@ def play_episode(environment, agent, render):
 def save(agent, filename):
     torch.save({
         'agent': agent.agent,
-        'net_type': agent.net.type,
+        'net_type': agent.net.net_type,
         'net': agent.net.state_dict(),
         'optimizer': agent.optimizer.state_dict(),
     }, filename)
@@ -31,7 +31,7 @@ def save(agent, filename):
 def load(filename, agent):
     checkpoint = torch.load(filename)
     if agent.agent == checkpoint['agent']:
-        if agent.net.type == checkpoint['net_type']:
+        if agent.net.net_type == checkpoint['net_type']:
             agent.net.load_state_dict(checkpoint['net'])
             agent.optimizer.load_state_dict(checkpoint['optimizer'])
         else:

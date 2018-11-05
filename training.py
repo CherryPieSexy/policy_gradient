@@ -4,7 +4,7 @@ import argparse
 import gym
 from tensorboardX import SummaryWriter
 from src.networks import DenseSeparate, DenseShared, ConvSeparate, ConvShared
-from src import Reinforce, A2C, PPO, atari_list, save, make_atari, play_episode, EnvPool
+from src import Reinforce, A2C, PPO, atari_list, save, load, make_atari, play_episode, EnvPool
 
 
 if __name__ == '__main__':
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument("--gamma", type=float, default=0.99,
                         help="Discount factor, from 0.0 to 1.0")
     parser.add_argument("--cuda", type=bool_type, default='false',
-                        help="Cuda. \'true\' or \'false\'")
+                        help="cuda. \'true\' or \'false\'")
     parser.add_argument("--train_steps", type=int, default=0,
                         help="number of training steps")
     # a2c specific arguments:
@@ -124,6 +124,9 @@ if __name__ == '__main__':
         print('Training done. Checkpoint saved in \'{}\''.format(checkpoint))
 
     if args.watch > 0:
+        if args.train_steps == 0:
+            checkpoint = 'checkpoints/' + args.environment + '/' + args.agent + '.pth'
+            load(checkpoint, agent)
         print('========================= watching ===========================')
         for _ in range(args.watch):
             print(play_episode(environment, agent, True))

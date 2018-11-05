@@ -98,7 +98,7 @@ class PPO:
         logit, value = self.net(observations)
         p = F.softmax(logit, dim=-1)
         log_p = F.log_softmax(logit, dim=-1)
-        log_p_for_a = log_p[torch.arange(self.rollout_len * self.ppo_batch_size), actions]
+        log_p_for_a = log_p[torch.arange(self.ppo_batch_size), actions]
 
         ratio = (log_p_for_a - old_log_p_for_a).exp()
         surrogate1 = ratio * advantages
